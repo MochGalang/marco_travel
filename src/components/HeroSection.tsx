@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageCircle, CheckCircle, Star, Users } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react';
 
 const badges = [
   { icon: <CheckCircle size={16} className="text-[#c9a84c]" />, text: 'Terdaftar Kemenag RI' },
@@ -7,31 +8,187 @@ const badges = [
   { icon: <Users size={16} className="text-[#c9a84c]" />, text: '10.000+ Jamaah' },
 ];
 
+// Floating particles
+const particles = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 4 + 2,
+  duration: Math.random() * 6 + 5,
+  delay: Math.random() * 4,
+}));
+
+// Floating icons (moon, star, crescent shapes as unicode)
+const floatingIcons = [
+  { symbol: '☪', x: 85, y: 20, size: 28, delay: 0 },
+  { symbol: '✦', x: 12, y: 65, size: 18, delay: 1.2 },
+  { symbol: '☽', x: 75, y: 70, size: 24, delay: 0.6 },
+  { symbol: '✦', x: 55, y: 15, size: 14, delay: 2.1 },
+  { symbol: '✦', x: 30, y: 80, size: 10, delay: 1.8 },
+];
+
 export default function HeroSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const { scrollY } = useScroll();
+  const bgY = useTransform(scrollY, [0, 600], [0, 120]);
+  const bgScale = useTransform(scrollY, [0, 600], [1, 1.08]);
+
   const handleScrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = sectionRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setMousePos({
+        x: ((e.clientX - rect.left) / rect.width - 0.5) * 20,
+        y: ((e.clientY - rect.top) / rect.height - 0.5) * 12,
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
     <section
       id="beranda"
+      ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background Image */}
-      <div
+      {/* Background Image with Ken-Burns + Parallax */}
+      <motion.div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
+        style={{
+          backgroundImage: "url('/images/hero-bg.jpg')",
+          y: bgY,
+          scale: bgScale,
+        }}
+        animate={{
+          x: mousePos.x * 0.5,
+          y: mousePos.y * 0.5,
+        }}
+        transition={{ type: 'spring', stiffness: 60, damping: 20 }}
+      />
+
+      {/* Ken-Burns zoom animation overlay (CSS keyframe via inline) */}
+      <motion.div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
+        initial={{ scale: 1.12 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 8, ease: 'easeOut' }}
       />
+
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#0d3321]/95 via-[#1a5c3a]/85 to-[#2d7a50]/70" />
       {/* Arabesque Pattern */}
       <div className="absolute inset-0 arabesque-pattern opacity-30" />
-      {/* Geometric decorations */}
-      <div className="absolute top-20 right-10 w-72 h-72 rounded-full bg-[#c9a84c]/5 blur-3xl" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 rounded-full bg-emerald-400/5 blur-3xl" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      {/* Floating Particles */}
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-[#c9a84c]/30 pointer-events-none"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+          }}
+          animate={{
+            y: [0, -30, 0],
+            x: [0, 10, -8, 0],
+            opacity: [0.2, 0.7, 0.2],
+            scale: [1, 1.4, 1],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
+      {/* Floating Icons */}
+      {floatingIcons.map((icon, i) => (
+        <motion.div
+          key={i}
+          className="absolute pointer-events-none select-none text-[#c9a84c]/20"
+          style={{
+            left: `${icon.x}%`,
+            top: `${icon.y}%`,
+            fontSize: icon.size,
+          }}
+          animate={{
+            y: [0, -18, 0],
+            rotate: [0, 15, -10, 0],
+            opacity: [0.15, 0.35, 0.15],
+          }}
+          transition={{
+            duration: 7 + icon.delay,
+            delay: icon.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        >
+          {icon.symbol}
+        </motion.div>
+      ))}
+
+      {/* Glowing orbs */}
+      <motion.div
+        className="absolute top-20 right-10 w-72 h-72 rounded-full bg-[#c9a84c]/8 blur-3xl pointer-events-none"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.4, 0.7, 0.4],
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute bottom-20 left-10 w-96 h-96 rounded-full bg-emerald-400/8 blur-3xl pointer-events-none"
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+      />
+
+      {/* Floating image card - Masjidil Haram thumbnail */}
+      <motion.div
+        className="absolute right-8 bottom-24 hidden lg:block pointer-events-none z-10"
+        initial={{ opacity: 0, x: 60, y: 20 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
+      >
+        <motion.div
+          animate={{ y: [0, -12, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2 shadow-2xl"
+        >
+          <img
+            src="/images/madinah.jpg"
+            alt="Madinah"
+            className="w-44 h-28 object-cover rounded-xl"
+          />
+          <div className="p-2">
+            <p className="text-white text-xs font-semibold">Madinah Al-Munawwarah</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={9} className="text-[#c9a84c] fill-[#c9a84c]" />
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 pt-32">
         <div className="max-w-4xl">
           {/* Pre-headline */}
           <motion.div
@@ -40,7 +197,12 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex items-center gap-2 mb-6"
           >
-            <div className="h-px w-12 bg-[#c9a84c]" />
+            <motion.div
+              className="h-px bg-[#c9a84c]"
+              initial={{ width: 0 }}
+              animate={{ width: 48 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            />
             <span className="text-[#c9a84c] text-sm font-semibold tracking-widest uppercase font-inter">
               Agen Resmi Kemenag RI
             </span>
@@ -55,7 +217,13 @@ export default function HeroSection() {
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Wujudkan Impian{' '}
-            <span className="text-[#c9a84c]">Ibadah Haji</span>{' '}
+            <motion.span
+              className="text-[#c9a84c]"
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              Ibadah Haji
+            </motion.span>{' '}
             &amp; Umroh Anda{' '}
             <span className="italic">Bersama Marco</span>
           </motion.h1>
@@ -77,22 +245,26 @@ export default function HeroSection() {
             transition={{ duration: 0.7, delay: 0.65 }}
             className="flex flex-col sm:flex-row gap-4 mb-14"
           >
-            <button
+            <motion.button
               onClick={() => handleScrollTo('paket')}
-              className="group flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#b8943d] text-white px-8 py-4 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-xl hover:shadow-yellow-900/30 hover:-translate-y-1"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.97 }}
+              className="group flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#b8943d] text-white px-8 py-4 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-xl hover:shadow-yellow-900/30"
             >
               Lihat Paket Kami
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <a
+            </motion.button>
+            <motion.a
               href="https://wa.me/6281234567890"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-xl font-semibold text-base transition-all duration-300 hover:-translate-y-1"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-xl font-semibold text-base transition-all duration-300"
             >
               <MessageCircle size={18} />
               Hubungi Kami
-            </a>
+            </motion.a>
           </motion.div>
 
           {/* Floating Badges */}
@@ -108,7 +280,8 @@ export default function HeroSection() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.9 + i * 0.1 }}
-                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2"
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.18)' }}
+                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 cursor-default"
               >
                 {badge.icon}
                 <span className="text-white text-sm font-medium">{badge.text}</span>
