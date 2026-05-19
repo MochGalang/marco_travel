@@ -103,15 +103,20 @@ export default function HeroSection() {
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
       {/* Background Video — Dual crossfade for seamless loop */}
+      {/* Layer luar: hanya scroll parallax */}
       <motion.div
         className="absolute inset-0 overflow-hidden will-change-transform"
         style={{ y: bgY, scale: bgScale }}
-        animate={{
-          x: mousePos.x * 0.5,
-          y: mousePos.y * 0.5,
-        }}
-        transition={{ type: 'spring', stiffness: 60, damping: 20 }}
       >
+        {/* Layer dalam: hanya mouse movement */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            x: mousePos.x * 0.5,
+            y: mousePos.y * 0.5,
+          }}
+          transition={{ type: 'spring', stiffness: 60, damping: 20 }}
+        >
         {/* Video A */}
         <motion.video
           ref={videoRef1}
@@ -135,6 +140,7 @@ export default function HeroSection() {
           animate={{ opacity: activeVideo === 2 ? 1 : 0 }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
         />
+        </motion.div>
       </motion.div>
 
       {/* Gradient Overlay */}
