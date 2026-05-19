@@ -8,7 +8,7 @@ const milestones = [
     phase: 'Pendaftaran',
     date: 'Jan – Mar 2026',
     desc: 'Buka pendaftaran resmi haji khusus 2026. Segera daftarkan diri Anda sebelum kuota penuh.',
-    color: 'from-blue-500 to-blue-600',
+    color: 'from-[#1a5c3a] to-[#2d7a50]',
     status: 'open',
   },
   {
@@ -16,7 +16,7 @@ const milestones = [
     phase: 'Pelunasan',
     date: 'Apr – Mei 2026',
     desc: 'Pelunasan biaya perjalanan haji. Tersedia cicilan tanpa bunga hingga 12 bulan.',
-    color: 'from-[#c9a84c] to-yellow-500',
+    color: 'from-[#1a5c3a] to-[#2d7a50]',
     status: 'upcoming',
   },
   {
@@ -24,7 +24,7 @@ const milestones = [
     phase: 'Manasik',
     date: 'Jun 2026',
     desc: 'Pelatihan manasik haji intensif selama 4 minggu bersama pembimbing bersertifikat.',
-    color: 'from-purple-500 to-purple-600',
+    color: 'from-[#1a5c3a] to-[#2d7a50]',
     status: 'upcoming',
   },
   {
@@ -40,7 +40,7 @@ const milestones = [
     phase: 'Kepulangan',
     date: '25 Jul 2026',
     desc: 'Kepulangan ke tanah air sebagai haji mabrur. Penjemputan resmi di bandara asal.',
-    color: 'from-rose-500 to-red-600',
+    color: 'from-[#1a5c3a] to-[#2d7a50]',
     status: 'upcoming',
   },
 ];

@@ -29,6 +29,10 @@ const floatingIcons = [
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef1 = useRef<HTMLVideoElement>(null);
+  const videoRef2 = useRef<HTMLVideoElement>(null);
+  const activeRef = useRef<1 | 2>(1);
+  const [activeVideo, setActiveVideo] = useState<1 | 2>(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const { scrollY } = useScroll();
@@ -39,6 +43,45 @@ export default function HeroSection() {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Seamless video loop: crossfade between two video elements
+  useEffect(() => {
+    const v1 = videoRef1.current;
+    const v2 = videoRef2.current;
+    if (!v1 || !v2) return;
+
+    const SWITCH_BEFORE = 0.8; // seconds before end to start switching
+
+    v1.play().catch(() => {});
+
+    const makeHandler = (
+      current: HTMLVideoElement,
+      next: HTMLVideoElement,
+      which: 1 | 2
+    ) => () => {
+      if (!current.duration) return;
+      if (
+        current.duration - current.currentTime <= SWITCH_BEFORE &&
+        activeRef.current === which
+      ) {
+        activeRef.current = which === 1 ? 2 : 1;
+        setActiveVideo(which === 1 ? 2 : 1);
+        next.currentTime = 0;
+        next.play().catch(() => {});
+      }
+    };
+
+    const handle1 = makeHandler(v1, v2, 1);
+    const handle2 = makeHandler(v2, v1, 2);
+
+    v1.addEventListener('timeupdate', handle1);
+    v2.addEventListener('timeupdate', handle2);
+
+    return () => {
+      v1.removeEventListener('timeupdate', handle1);
+      v2.removeEventListener('timeupdate', handle2);
+    };
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -59,29 +102,40 @@ export default function HeroSection() {
       ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background Image with Ken-Burns + Parallax */}
+      {/* Background Video — Dual crossfade for seamless loop */}
       <motion.div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
-        style={{
-          backgroundImage: "url('/images/hero-bg.jpg')",
-          y: bgY,
-          scale: bgScale,
-        }}
+        className="absolute inset-0 overflow-hidden will-change-transform"
+        style={{ y: bgY, scale: bgScale }}
         animate={{
           x: mousePos.x * 0.5,
           y: mousePos.y * 0.5,
         }}
         transition={{ type: 'spring', stiffness: 60, damping: 20 }}
-      />
-
-      {/* Ken-Burns zoom animation overlay (CSS keyframe via inline) */}
-      <motion.div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
-        initial={{ scale: 1.12 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 8, ease: 'easeOut' }}
-      />
+      >
+        {/* Video A */}
+        <motion.video
+          ref={videoRef1}
+          src="/videos/tawaf.mp4"
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+          animate={{ opacity: activeVideo === 1 ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+        />
+        {/* Video B */}
+        <motion.video
+          ref={videoRef2}
+          src="/videos/tawaf.mp4"
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: activeVideo === 2 ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+        />
+      </motion.div>
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#0d3321]/95 via-[#1a5c3a]/85 to-[#2d7a50]/70" />

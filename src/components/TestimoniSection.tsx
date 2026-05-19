@@ -9,15 +9,17 @@ const testimonials = [
     year: 'Umroh 2024',
     rating: 5,
     avatar: 'SR',
+    photo: '/images/comment/women-1.jpg',
     color: 'from-emerald-500 to-teal-600',
     text: 'Alhamdulillah, perjalanan umroh saya bersama Marco Tour sangat berkesan. Pembimbing kami, Ustaz Hasan, sangat sabar dan kompeten dalam menjelaskan setiap rukun ibadah. Hotel yang disediakan sangat dekat dengan Masjidil Haram. Saya sudah rekomendasikan ke seluruh keluarga.',
   },
   {
-    name: 'Bpk. Ahmad Fauzi, S.E.',
+    name: 'Bpk. Christiano Ronaldo, S.E.',
     city: 'Surabaya, Jawa Timur',
     year: 'Haji Khusus 2023',
     rating: 5,
     avatar: 'AF',
+    photo: '/images/comment/men-1.jpg',
     color: 'from-blue-500 to-indigo-600',
     text: 'Pengalaman haji bersama Marco benar-benar luar biasa. Manasik yang intensif selama 6 bulan membuat kami sangat siap secara mental dan fisik. Akomodasi bintang 5 yang diberikan sangat memudahkan ibadah kami, terutama untuk istri saya yang lansia. Terima kasih Marco!',
   },
@@ -27,15 +29,17 @@ const testimonials = [
     year: 'Umroh Ramadhan 2024',
     rating: 5,
     avatar: 'DK',
+    photo: '/images/comment/women-2.jpg',
     color: 'from-purple-500 to-pink-600',
     text: 'Subhanallah, umroh di bulan Ramadhan bersama Marco adalah pengalaman spiritual terbaik dalam hidup saya. Bisa shalat tarawih di Masjidil Haram, i\'tikaf 10 malam terakhir, dan sahur buka bersama di hotel bintang 5. Tim Marco sangat responsif dan profesional.',
   },
   {
-    name: 'H. Bambang Widodo, M.M.',
+    name: 'H. Neymar Jr, M.M.',
     city: 'Semarang, Jawa Tengah',
     year: 'Umroh Plus Turki 2023',
     rating: 5,
     avatar: 'BW',
+    photo: '/images/comment/men-2.jpg',
     color: 'from-orange-500 to-red-600',
     text: 'Paket Umroh Plus Turki dari Marco adalah nilai terbaik yang pernah saya dapatkan. Mengunjungi Makkah, Madinah, dan Istanbul dalam satu perjalanan. Guide lokal di Turki juga sangat berpengetahuan. Sangat direkomendasikan untuk yang ingin umroh sekaligus wisata halal.',
   },
@@ -45,6 +49,7 @@ const testimonials = [
     year: 'Umroh 2024',
     rating: 5,
     avatar: 'NH',
+    photo: '/images/comment/women-3.jpg',
     color: 'from-teal-500 to-cyan-600',
     text: 'Ini adalah kali ketiga saya berangkat umroh bersama Marco Tour. Setiap tahun kualitasnya semakin baik. Pelayanan dari awal pendaftaran, manasik, hingga kepulangan sangat teratur dan profesional. Tim customer service selalu siap 24 jam. Marco memang pilihan terbaik!',
   },
@@ -54,6 +59,7 @@ const testimonials = [
     year: 'Umroh 2025',
     rating: 5,
     avatar: 'RP',
+    photo: '/images/comment/men-3.jpg',
     color: 'from-green-500 to-emerald-600',
     text: 'Sebagai first timer umroh, saya sangat terbantu dengan bimbingan tim Marco. Dari pengurusan dokumen, persiapan perlengkapan, hingga panduan ibadah di tanah suci, semua dijelaskan dengan sangat baik. Hotel kami hanya 5 menit jalan kaki dari Masjidil Haram. Luar biasa!',
   },
@@ -132,8 +138,18 @@ export default function TestimoniSection() {
                   <Quote size={32} className="text-[#c9a84c] mb-4" />
                   <p className="text-gray-700 leading-relaxed text-sm mb-6 line-clamp-4">{t.text}</p>
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
-                      {t.avatar}
+                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#c9a84c]/40">
+                      <img
+                        src={t.photo}
+                        alt={t.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const el = e.currentTarget;
+                          el.style.display = 'none';
+                          el.parentElement!.classList.add(`bg-gradient-to-br`, ...t.color.split(' '));
+                          el.parentElement!.innerHTML = `<span class="text-white font-bold text-sm flex items-center justify-center w-full h-full">${t.avatar}</span>`;
+                        }}
+                      />
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{t.name}</p>
@@ -195,8 +211,18 @@ export default function TestimoniSection() {
                     <Quote size={28} className="text-[#c9a84c] mb-3" />
                     <p className="text-gray-700 leading-relaxed text-sm mb-5">{t.text}</p>
                     <div className="flex items-center gap-3">
-                      <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
-                        {t.avatar}
+                      <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#c9a84c]/40">
+                        <img
+                          src={t.photo}
+                          alt={t.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const el = e.currentTarget;
+                            el.style.display = 'none';
+                            el.parentElement!.classList.add(`bg-gradient-to-br`, ...t.color.split(' '));
+                            el.parentElement!.innerHTML = `<span class="text-white font-bold text-sm flex items-center justify-center w-full h-full">${t.avatar}</span>`;
+                          }}
+                        />
                       </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">{t.name}</p>
