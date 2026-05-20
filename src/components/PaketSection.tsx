@@ -225,7 +225,7 @@ export default function PaketSection() {
 
   useEffect(() => {
     // Mengambil data dari API yang sudah dibuat di folder travel/api
-    fetch('http://localhost/travel/api/paket.php')
+    fetch('https://admin-api.42web.io/paket.php')
       .then(res => res.json())
       .then(json => {
         if (json.success && json.data) {
