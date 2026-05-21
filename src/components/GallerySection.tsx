@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { ZoomIn } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { ZoomIn, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:8000/api'
@@ -70,6 +70,7 @@ export default function GallerySection() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
   const [hovered, setHovered] = useState<number | null>(null);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`${BASE_URL}/galeri`)
@@ -86,6 +87,38 @@ export default function GallerySection() {
         setGalleryItems(defaultGalleryItems);
       });
   }, []);
+
+  // Keyboard Navigation & body scroll lock
+  useEffect(() => {
+    if (selectedIndex === null) {
+      document.body.style.overflow = 'unset';
+      return;
+    }
+
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedIndex(null);
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedIndex, galleryItems]);
+
+  const handleNext = () => {
+    setSelectedIndex((prev) => (prev !== null && prev < galleryItems.length - 1 ? prev + 1 : 0));
+  };
+
+  const handlePrev = () => {
+    setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : galleryItems.length - 1));
+  };
+
+  const activeItem = selectedIndex !== null ? galleryItems[selectedIndex] : null;
 
   return (
     <section ref={ref} className="py-24 bg-white">
@@ -124,6 +157,7 @@ export default function GallerySection() {
               className="break-inside-avoid relative group overflow-hidden rounded-2xl cursor-pointer"
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
+              onClick={() => setSelectedIndex(i)}
             >
               <img
                 src={item.image}
@@ -161,6 +195,74 @@ export default function GallerySection() {
             </motion.div>
           ))}
         </div>
+
+        {/* Dynamic Lightbox Modal */}
+        <AnimatePresence>
+          {selectedIndex !== null && activeItem && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-8"
+              onClick={() => setSelectedIndex(null)}
+            >
+              {/* Close Button */}
+              <button
+                className="absolute top-4 right-4 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all duration-300"
+                onClick={() => setSelectedIndex(null)}
+              >
+                <X size={24} />
+              </button>
+
+              {/* Prev Arrow */}
+              <button
+                className="absolute left-4 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all duration-300 hidden sm:block"
+                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+              >
+                <ChevronLeft size={28} />
+              </button>
+
+              {/* Next Arrow */}
+              <button
+                className="absolute right-4 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all duration-300 hidden sm:block"
+                onClick={(e) => { e.stopPropagation(); handleNext(); }}
+              >
+                <ChevronRight size={28} />
+              </button>
+
+              {/* Lightbox Content Container */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="relative max-w-4xl max-h-[85vh] flex flex-col items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={activeItem.image}
+                  alt={activeItem.title}
+                  className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/800x600/1a5c3a/fff?text=📷';
+                  }}
+                />
+
+                {/* Info Text below image */}
+                <div className="text-center mt-4 px-4 max-w-xl">
+                  {activeItem.category && (
+                    <span className="inline-block bg-[#c9a84c] text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1 rounded-full mb-2">
+                      {activeItem.category}
+                    </span>
+                  )}
+                  <h3 className="text-white font-medium text-lg leading-snug">
+                    {activeItem.title || 'Dokumentasi Perjalanan'}
+                  </h3>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Social Proof */}
         <motion.div
