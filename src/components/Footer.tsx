@@ -1,4 +1,9 @@
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+const BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000/api'
+  : 'https://admin-api-tau.vercel.app/api';
 
 const navLinks = [
   { label: 'Beranda', href: '#beranda' },
@@ -17,10 +22,38 @@ const paketLinks = [
 ];
 
 export default function Footer() {
+  const [settings, setSettings] = useState({
+    alamat: 'Jl. Sudirman No. 88, Lantai 12\nJakarta Pusat, DKI Jakarta 10220',
+    telepon: '+62 812-3456-7890',
+    email: 'info@marcotour.co.id',
+    whatsapp: 'https://wa.me/6281234567890'
+  });
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/pengaturan`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data) {
+          setSettings({
+            alamat: json.data.alamat || 'Jl. Sudirman No. 88, Lantai 12\nJakarta Pusat, DKI Jakarta 10220',
+            telepon: json.data.telepon || '+62 812-3456-7890',
+            email: json.data.email || 'info@marcotour.co.id',
+            whatsapp: json.data.whatsapp || 'https://wa.me/6281234567890'
+          });
+        }
+      })
+      .catch(err => {
+        console.error("Gagal mengambil data pengaturan footer:", err);
+      });
+  }, []);
+
   const handleNav = (href: string) => {
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Bersihkan link telepon untuk tag href tel:
+  const cleanPhone = settings.telepon.replace(/[^0-9+]/g, '');
 
   return (
     <footer id="kontak" className="bg-[#0a2018] text-white">
@@ -118,32 +151,32 @@ export default function Footer() {
                   className="flex items-start gap-3 text-white/60 hover:text-white/90 transition-colors text-sm"
                 >
                   <MapPin size={16} className="text-[#c9a84c] mt-0.5 flex-shrink-0" />
-                  <span>Jl. Sudirman No. 88, Lantai 12<br />Jakarta Pusat, DKI Jakarta 10220</span>
+                  <span style={{ whiteSpace: 'pre-line' }}>{settings.alamat}</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+6281234567890"
+                  href={`tel:${cleanPhone}`}
                   className="flex items-center gap-3 text-white/60 hover:text-white/90 transition-colors text-sm"
                 >
                   <Phone size={16} className="text-[#c9a84c] flex-shrink-0" />
-                  +62 812-3456-7890
+                  {settings.telepon}
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:info@marcotour.co.id"
+                  href={`mailto:${settings.email}`}
                   className="flex items-center gap-3 text-white/60 hover:text-white/90 transition-colors text-sm"
                 >
                   <Mail size={16} className="text-[#c9a84c] flex-shrink-0" />
-                  info@marcotour.co.id
+                  {settings.email}
                 </a>
               </li>
             </ul>
 
             {/* WA Button */}
             <a
-              href="https://wa.me/6281234567890"
+              href={settings.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"

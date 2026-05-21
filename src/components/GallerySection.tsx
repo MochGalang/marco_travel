@@ -1,62 +1,91 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ZoomIn } from 'lucide-react';
 
-const galleryItems = [
+const BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000/api'
+  : 'https://admin-api-tau.vercel.app/api';
+
+const defaultGalleryItems = [
   {
-    src: '/images/hero-bg.jpg',
+    image: '/images/hero-bg.jpg',
     title: 'Masjidil Haram, Makkah',
     category: 'Ibadah',
     tall: true,
   },
   {
-    src: '/images/madinah.jpg',
+    image: '/images/madinah.jpg',
     title: 'Masjid Nabawi, Madinah',
     category: 'Ibadah',
     tall: false,
   },
   {
-    src: '/images/manasik.jpg',
+    image: '/images/manasik.jpg',
     title: 'Manasik Haji Intensif',
     category: 'Persiapan',
     tall: false,
   },
   {
-    src: '/images/gallery-1.jpg',
+    image: '/images/gallery-1.jpg',
     title: 'Momen Bersama Jamaah',
     category: 'Dokumentasi',
     tall: true,
   },
   {
-    src: '/images/umroh-ramadhan.jpg',
+    image: '/images/umroh-ramadhan.jpg',
     title: 'Umroh Malam Ramadhan',
     category: 'Ibadah',
     tall: false,
   },
   {
-    src: '/images/gallery-2.jpg',
+    image: '/images/gallery-2.jpg',
     title: 'Perjalanan Wukuf Arafah',
     category: 'Haji',
     tall: false,
   },
   {
-    src: '/images/turki.jpg',
+    image: '/images/turki.jpg',
     title: 'Wisata Halal Istanbul',
     category: 'Tour Plus',
     tall: false,
   },
   {
-    src: '/images/haji-khusus.jpg',
+    image: '/images/haji-khusus.jpg',
     title: 'Akomodasi Premium Bintang 5',
     category: 'Fasilitas',
     tall: false,
   },
 ];
 
+interface GalleryItem {
+  id?: number;
+  image: string;
+  title: string;
+  category: string;
+  tall: boolean;
+}
+
 export default function GallerySection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
   const [hovered, setHovered] = useState<number | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/galeri`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data && json.data.length > 0) {
+          setGalleryItems(json.data);
+        } else {
+          setGalleryItems(defaultGalleryItems);
+        }
+      })
+      .catch(err => {
+        console.error("Gagal mengambil data galeri:", err);
+        setGalleryItems(defaultGalleryItems);
+      });
+  }, []);
 
   return (
     <section ref={ref} className="py-24 bg-white">
@@ -97,15 +126,20 @@ export default function GallerySection() {
               onMouseLeave={() => setHovered(null)}
             >
               <img
-                src={item.src}
+                src={item.image}
                 alt={item.title}
                 className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${item.tall ? 'aspect-[3/4]' : 'aspect-square'}`}
                 loading="lazy"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://placehold.co/400x300/1a5c3a/fff?text=📷';
+                }}
               />
               {/* Category Tag */}
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#1a5c3a] text-xs font-semibold px-2.5 py-1 rounded-full">
-                {item.category}
-              </div>
+              {item.category && (
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#1a5c3a] text-xs font-semibold px-2.5 py-1 rounded-full">
+                  {item.category}
+                </div>
+              )}
 
               {/* Overlay */}
               <motion.div
@@ -122,7 +156,7 @@ export default function GallerySection() {
                 >
                   <ZoomIn size={18} className="text-white" />
                 </motion.div>
-                <p className="text-white font-semibold text-sm text-center leading-tight">{item.title}</p>
+                <p className="text-white font-semibold text-sm text-center leading-tight">{item.title || 'Momen Terbaik'}</p>
               </motion.div>
             </motion.div>
           ))}
